@@ -1,4 +1,15 @@
-// --- 3D Background with Three.js ---
+// --- LOADING SCREEN ---
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    setTimeout(() => {
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+        // Start Animations needed after load
+    }, 1500); // 1.5s Fake Loading time
+});
+
+
+// --- 3D BACKGROUND (Three.js) ---
 const initThreeJS = () => {
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
@@ -8,82 +19,126 @@ const initThreeJS = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
-    // Particles
-    const particlesGeometry = new THREE.BufferGeometry();
-    const particlesCount = 2000;
-    const posArray = new Float32Array(particlesCount * 3);
-
-    for (let i = 0; i < particlesCount * 3; i++) {
-        // Spread particles
-        posArray[i] = (Math.random() - 0.5) * 15; // Range -7.5 to 7.5
-    }
-
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-
-    // Material
-    const material = new THREE.PointsMaterial({
-        size: 0.02,
-        color: 0x00f3ff, // Primary theme color
+    // Objects: Icosahedrons instead of particles
+    const geometry = new THREE.IcosahedronGeometry(1, 0); // Radius 1, Detail 0
+    const material = new THREE.MeshBasicMaterial({
+        color: 0x00f3ff,
+        wireframe: true,
         transparent: true,
-        opacity: 0.8
+        opacity: 0.3
     });
 
-    // Mesh
-    const particlesMesh = new THREE.Points(particlesGeometry, material);
-    scene.add(particlesMesh);
+    const objects = [];
+    const objectCount = 15;
 
-    camera.position.z = 2;
+    for (let i = 0; i < objectCount; i++) {
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Random Position
+        mesh.position.x = (Math.random() - 0.5) * 15;
+        mesh.position.y = (Math.random() - 0.5) * 15;
+        mesh.position.z = (Math.random() - 0.5) * 15;
+
+        // Random Scale
+        const scale = Math.random();
+        mesh.scale.set(scale, scale, scale);
+
+        // Random Rotation Speed
+        mesh.userData = {
+            rotSpeedX: (Math.random() - 0.5) * 0.005,
+            rotSpeedY: (Math.random() - 0.5) * 0.005
+        };
+
+        scene.add(mesh);
+        objects.push(mesh);
+    }
+
+    camera.position.z = 5;
+
+    // Scroll Logic for 3D
+    let scrollY = 0;
+    window.addEventListener('scroll', () => {
+        scrollY = window.scrollY;
+    });
 
     // Mouse Interaction
     let mouseX = 0;
     let mouseY = 0;
-
     document.addEventListener('mousemove', (event) => {
-        mouseX = event.clientX / window.innerWidth - 0.5; // -0.5 to 0.5
-        mouseY = event.clientY / window.innerHeight - 0.5;
+        mouseX = (event.clientX / window.innerWidth) - 0.5;
+        mouseY = (event.clientY / window.innerHeight) - 0.5;
     });
 
     // Animation Loop
     const animate = () => {
         requestAnimationFrame(animate);
 
-        // Rotate Global System slowly
-        particlesMesh.rotation.y += 0.001;
-        particlesMesh.rotation.x += 0.0005;
+        // Global Scene Rotation based on Scroll
+        // camera.position.y = -scrollY * 0.005; // Move camera down on scroll
 
-        // Mouse Parallax based on movement
-        const targetX = mouseX * 0.5;
-        const targetY = mouseY * 0.5;
+        objects.forEach(mesh => {
+            // Self Rotation
+            mesh.rotation.x += mesh.userData.rotSpeedX;
+            mesh.rotation.y += mesh.userData.rotSpeedY;
 
-        // Smooth easing
-        particlesMesh.rotation.y += 0.05 * (targetX - particlesMesh.rotation.y);
-        particlesMesh.rotation.x += 0.05 * (targetY - particlesMesh.rotation.x);
+            // Scroll influence (Move objects up/down or rotate faster)
+            mesh.rotation.y += scrollY * 0.0002;
+            mesh.position.y += Math.sin(Date.now() * 0.001 + mesh.position.x) * 0.005; // Floating effect
+        });
+
+        // Mouse Parallax
+        camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY * 0.5 - camera.position.y) * 0.05;
+        camera.lookAt(scene.position);
 
         renderer.render(scene, camera);
     };
 
     animate();
 
-    // Resize Handler
+    // Resize
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Update Color on Theme Change
-    window.addEventListener('themeChanged', (e) => {
-        const checkColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-        material.color.set(checkColor);
+    // Theme Color Update
+    window.addEventListener('themeChanged', () => {
+        const style = getComputedStyle(document.body);
+        const color = style.getPropertyValue('--primary').trim();
+        material.color.set(color);
     });
 };
 
 initThreeJS();
 
 
-// --- Scroll Animations (Intersection Observer) ---
+// --- PARALLAX TEXT ---
+const sloganText = document.getElementById('slogan-text');
+window.addEventListener('scroll', () => {
+    const scrollPos = window.scrollY;
+    // Parallax effect: Move text horizontally or vertically based on scroll
+    // Only apply when visible or near section
+    if (sloganText) {
+        const offset = scrollPos * 0.5;
+        sloganText.style.transform = `translateX(${offset}px)`;
+        sloganText.style.opacity = Math.max(0, 1 - scrollPos / 1000); // Fade out on scroll down
+
+        // Reset when in view? For specific section parallax:
+        const rect = sloganText.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            const relativeScroll = window.innerHeight - rect.top;
+            sloganText.style.transform = `translateY(-${relativeScroll * 0.2}px)`;
+            sloganText.style.opacity = Math.min(1, relativeScroll / 300);
+        }
+    }
+});
+
+
+// --- SCROLL ANIMATIONS (Observer) ---
 const observerOptions = {
-    threshold: 0.1 // Trigger when 10% visible
+    threshold: 0.15
 };
 
 const observer = new IntersectionObserver((entries) => {
@@ -94,11 +149,10 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-const hiddenElements = document.querySelectorAll('.hidden');
-hiddenElements.forEach((el) => observer.observe(el));
+document.querySelectorAll('.hidden').forEach((el) => observer.observe(el));
 
 
-// --- Theme Switcher Logic ---
+// --- THEME SWITCHER ---
 const themeToggleBtn = document.getElementById('themeToggle');
 const htmlElement = document.documentElement;
 
@@ -106,77 +160,25 @@ themeToggleBtn.addEventListener('click', () => {
     const currentTheme = htmlElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     htmlElement.setAttribute('data-theme', newTheme);
-
-    // Update Icon
     themeToggleBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
-
-    // Dispatch event for Three.js to pick up color change
     window.dispatchEvent(new Event('themeChanged'));
 });
 
 
-// --- Login Modal Logic (Existing) ---
+// --- PARTNER CAROUSEL CLONE (Infinite Scroll) ---
+const marqueeContent = document.querySelector('.marquee-content');
+if (marqueeContent) {
+    // Clone content to make it seamless
+    const clone = marqueeContent.cloneNode(true);
+    document.querySelector('.marquee').appendChild(clone);
+}
+
+
+// --- LOGIN MODAL ---
 const loginBtn = document.getElementById('loginBtn');
 const modalOverlay = document.getElementById('modalOverlay');
 const closeBtn = document.getElementById('closeBtn');
-const loginForm = document.getElementById('loginForm');
-const messageDiv = document.getElementById('message');
 
-if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
-        modalOverlay.classList.add('active');
-    });
-}
-
-if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-        modalOverlay.classList.remove('active');
-    });
-}
-
-if (modalOverlay) {
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            modalOverlay.classList.remove('active');
-        }
-    });
-}
-
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(loginForm);
-        const data = Object.fromEntries(formData.entries());
-
-        messageDiv.innerText = 'Authenticating...';
-        messageDiv.style.color = '#fff';
-
-        try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                messageDiv.innerText = 'Access Granted.';
-                messageDiv.style.color = '#00f3ff';
-                setTimeout(() => {
-                    modalOverlay.classList.remove('active');
-                    messageDiv.innerText = '';
-                    loginForm.reset();
-                }, 1000);
-            } else {
-                messageDiv.innerText = result.message;
-                messageDiv.style.color = '#ff0055';
-            }
-        } catch (error) {
-            messageDiv.innerText = 'Connection Error';
-            messageDiv.style.color = '#ff0055';
-        }
-    });
-}
+if (loginBtn) loginBtn.addEventListener('click', () => modalOverlay.classList.add('active'));
+if (closeBtn) closeBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
+if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('active'); });
