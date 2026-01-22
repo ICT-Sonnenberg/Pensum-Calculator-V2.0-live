@@ -1,6 +1,6 @@
 const express = require('express');
 const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 require('dotenv').config();
 
@@ -35,11 +35,11 @@ app.post('/api/login', async (req, res) => {
 
   try {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    
+
     if (result.rows.length > 0) {
       const user = result.rows[0];
       const match = await bcrypt.compare(password, user.password_hash);
-      
+
       if (match) {
         res.json({ success: true, message: 'Login successful!' });
       } else {
