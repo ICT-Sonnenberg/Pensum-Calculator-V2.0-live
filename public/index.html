@@ -1,46 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity Tech</title>
+    <title>Lumina Facility | Future Cleaning</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Icons -->
 </head>
+
 <body>
-    <canvas id="canvas1"></canvas>
-    
+    <div id="canvas-container"></div>
+
     <header>
         <div class="logo-container">
-            <img src="logo.png" alt="Antigravity Logo" class="logo">
-            <span>ANTIGRAVITY.TECH</span>
+            <img src="logo.png" alt="Lumina Facility Logo" class="logo">
+            <span>LUMINA FACILITY</span>
         </div>
-        <div class="login-icon" id="loginBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <div class="nav-controls">
+            <button id="themeToggle" class="icon-btn" title="HWyte Mode Toggle">
+                ☀️
+            </button>
+            <div class="login-icon" id="loginBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
         </div>
     </header>
 
     <main>
-        <div class="content">
-            <h1>Experience The Future</h1>
-            <p>Move your mouse to interact with the antigravity field.</p>
-        </div>
+        <section class="hero">
+            <div class="hero-content hidden">
+                <h1>PURE. BRILLIANT. FUTURE.</h1>
+                <p>Reinigungs-Technologie des nächsten Jahrhunderts.</p>
+                <button class="cta-btn"
+                    onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})">Discover
+                    More</button>
+            </div>
+        </section>
+
+        <section id="services" class="services">
+            <h2 class="section-title hidden">Unsere Services</h2>
+            <div class="grid">
+                <div class="card hidden">
+                    <img src="service1.png" alt="Office Cleaning">
+                    <h3>Corporate Space</h3>
+                    <p>Hochglanz für High-Performance Workspaces. Wir nutzen Nano-Versiegelung für lang anhaltende
+                        Sauberkeit.</p>
+                </div>
+                <div class="card hidden">
+                    <img src="service2.png" alt="Industrial Cleaning">
+                    <h3>Skyline Maintenance</h3>
+                    <p>Drohnen-gestützte Fassadenreinigung für Wolkenkratzer und Glaspaläste.</p>
+                </div>
+                <div class="card hidden">
+                    <!-- Platzhalter Bild, nutzen wir nochmal service1 oder ein generisches -->
+                    <div class="placeholder-img"
+                        style="background: linear-gradient(45deg, var(--primary), var(--secondary)); height: 200px;">
+                    </div>
+                    <h3>Smart Desinfection</h3>
+                    <p>Autonome UV-C Roboter für klinisch reine Oberflächen in Echtzeit.</p>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Lumina Facility</h4>
+                <p>© 2026 Lumina Facility AG</p>
+                <div class="socials">
+                    <a href="#">LinkedIn</a>
+                    <a href="#">Facebook</a>
+                    <a href="#">Instagram</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Kontakt</h4>
+                <p>Technoparkstrasse 1</p>
+                <p>8005 Zürich</p>
+                <p>info@lumina.tech</p>
+            </div>
+            <div class="footer-section">
+                <h4>Rechtliches</h4>
+                <a href="#">AGB</a>
+                <a href="#">Datenschutz</a>
+                <a href="#">Impressum</a>
+            </div>
+            <div class="footer-section map">
+                <!-- Google Maps Embed Dummy -->
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2701.527773264627!2d8.51268631553956!3d47.39169497917084!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47900b9d5c807203%3A0xa64326164d12c229!2sTechnopark%20Z%C3%BCrich!5e0!3m2!1sde!2sch!4v1677685412345!5m2!1sde!2sch"
+                    width="100%" height="150" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <span class="close-btn" id="closeBtn">&times;</span>
-            <h2>Welcome Back</h2>
+            <h2>Member Login</h2>
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="username">Username</label>
+                    <label for="username">ID / Username</label>
                     <input type="text" id="username" name="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">Access Code</label>
                     <input type="password" id="password" name="password" required>
                 </div>
-                <button type="submit" class="submit-btn">Login</button>
+                <button type="submit" class="submit-btn">Authenticate</button>
             </form>
             <div id="message"></div>
         </div>
@@ -48,4 +125,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
